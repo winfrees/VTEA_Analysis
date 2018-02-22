@@ -39,7 +39,7 @@ print('\neigenvectors:\n')
 print(v)
 print()
 
-# restrict data
+# restrict data jhgfjgjkhgkj
 X = np.array([X[j] for j in range(len(X)) if X[j, 6] < 10000 and X[j, 1] > 10000])
 # change negative values to ones so they can be logged
 X = np.maximum(X, np.ones(X.shape))
