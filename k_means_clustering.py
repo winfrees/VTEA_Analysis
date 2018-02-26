@@ -14,14 +14,15 @@ from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 
 import os
+import shutil
 
 currdir = os.getcwd()
 print(currdir)
 
-if not os.path.exists('results'):
-    os.mkdir('results')
+if not os.path.exists('results1'):
+    os.mkdir('results1')
 
-os.chdir('results')
+os.chdir('results1')
 
 plt.rcParams['figure.figsize'] = (16, 9)
 plt.style.use('ggplot')
@@ -48,16 +49,16 @@ for table in tables:
     for i in range(7):
         X[:, i] = data[cols[i]].values
 
-    print(np.mean(X, axis=0))   # mean of data
-    sigma = np.cov(np.transpose(X))
-    print('\ncovariance matrix:\n')
-    print(sigma)
-    w, v = LA.eig(sigma)
-    print('\neigenvalues:\n')
-    print(w)
-    print('\neigenvectors:\n')
-    print(v)
-    print()
+    #print(np.mean(X, axis=0))   # mean of data
+    #sigma = np.cov(np.transpose(X))
+    #print('\ncovariance matrix:\n')
+    #print(sigma)
+    #w, v = LA.eig(sigma)
+    #print('\neigenvalues:\n')
+    #print(w)
+    #print('\neigenvectors:\n')
+    #print(v)
+    #print()
 
     # restrict data
     X = np.array([X[j] for j in range(len(X)) if X[j, 6] < 10000 and X[j, 1] > 10000])
@@ -136,111 +137,145 @@ for table in tables:
                 os.mkdir(name)
                 
             os.chdir(name)
-            t0 = time.time()
-            # catch warnings related to kneighbors_graph
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                        "ignore",
-                        message="the number of connected components of the " +
-                        "connectivity matrix is [0-9]{1,2}" +
-                        " > 1. Completing it to avoid stopping the tree early.",
-                        category=UserWarning)
-                warnings.filterwarnings(
-                        "ignore",
-                        message="Graph is not fully connected, spectral embedding" +
-                        " may not work as expected.",
-                        category=UserWarning)
-                algorithm.fit(X)
+            #directory = os.getcwd()
+            centroids = np.zeros((100*k, 7))
+            for trial in range(100):
+#                if not os.path.exists('trial' + str(trial)):
+#                    os.mkdir('trial' + str(trial))
+#                    
+#                os.chdir('trial' + str(trial))
+                t0 = time.time()
+                # catch warnings related to kneighbors_graph
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                            "ignore",
+                            message="the number of connected components of the " +
+                            "connectivity matrix is [0-9]{1,2}" +
+                            " > 1. Completing it to avoid stopping the tree early.",
+                            category=UserWarning)
+                    warnings.filterwarnings(
+                            "ignore",
+                            message="Graph is not fully connected, spectral embedding" +
+                            " may not work as expected.",
+                            category=UserWarning)
+                    algorithm.fit(X)
 
-            t1 = time.time()
-            # y_pred is cluster number
-            if hasattr(algorithm, 'labels_'):
-                y_pred = algorithm.labels_.astype(np.int)
+                t1 = time.time()
+                # y_pred is cluster number
+                if hasattr(algorithm, 'labels_'):
+                    y_pred = algorithm.labels_.astype(np.int)
 
-            else:
-                y_pred = algorithm.predict(X)
+                else:
+                    y_pred = algorithm.predict(X)
 
-            lowerbound = int(min(y_pred))    # lowest cluster number
-            upperbound = int(max(y_pred) + 1)   # highest cluster number
-            colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
-                                                 '#f781bf', '#a65628', '#984ea3',
-                                                 '#999999', '#e41a1c', '#dede00']),
-                                                 9*(upperbound - lowerbound))))
-            #print(name)
-            #print('\nnumber of clusters:')
-            #print(upperbound - lowerbound)
-            #print()
-            means = np.zeros((k, 7))
-            f = open('clusters.txt', 'w+')
-            for i in range(k):
-                # get cluster
-                fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-                points = np.array([X[j] for j in range(len(X)) if int(y_pred[j]) == i])
-                size = len(points)  # size of cluster
-                if size > 0:
-                    # save cluster info
-                    f.write('cluster ')
-                    f.write(str(i) + '\r\n')
-                    f.write('size:')
-                    f.write(str(size) + '\r\n')
-                    f.write(str(colors[i]) + '\r\n')    # color of cluster
-                    means[i] = np.mean(points, axis=0)
-                    f.write(str(means[i]) + '\r\n\r\n')  # mean of cluster
-                    #print(np.std(points, axis=0))
-                    #print(np.cov(np.transpose(points)))
-                    #print()
+                lowerbound = int(min(y_pred))    # lowest cluster number
+                upperbound = int(max(y_pred) + 1)   # highest cluster number
+                colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+                                                     '#f781bf', '#a65628', '#984ea3',
+                                                     '#999999', '#e41a1c', '#dede00']),
+                                                     9*(upperbound - lowerbound))))
+                #print(name)
+                #print('\nnumber of clusters:')
+                #print(upperbound - lowerbound)
+                #print()
+                means = np.zeros((k, 7))
+                #f = open('clusters.txt', 'w+')
+                for i in range(k):
+                    # get cluster
+                    #fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
+                    points = np.array([X[j] for j in range(len(X)) if int(y_pred[j]) == i])
+                    size = len(points)  # size of cluster
+                    if size > 0:
+                        # save cluster info
+                        #f.write('cluster ')
+                        #f.write(str(i) + '\r\n')
+                        #f.write('size:')
+                        #f.write(str(size) + '\r\n')
+                        #f.write(str(colors[i]) + '\r\n')    # color of cluster
+                        #means[i] = np.mean(points, axis=0)
+                        centroids[k*trial+i] = np.mean(points, axis=0)
+                        #f.write(str(means[i]) + '\r\n\r\n')  # mean of cluster
+                        #print(np.std(points, axis=0))
+                        #print(np.cov(np.transpose(points)))
+                        #print()
                     
-                    # plot each cluster individually
-                    for m in range(7):
-                        for n in range(7):
-                            ax[m,n].scatter(points[:, n], points[:, m], s=10, color=colors[i])
-                            if m == 6:
-                                ax[m,n].set(xlabel=cols[n])
-                                
-                            if n == 0:
-                                ax[m,n].set(ylabel=cols[m])
-                                
-                    plt.suptitle(name + ', k=' + str(k) + ', cluster ' + str(i))
-                    plt.savefig('cluster' + str(i) + '.png')    # save plot
-                    plt.clf()
-                    plt.close()
+                        # plot each cluster individually
+#                        for m in range(7):
+#                            for n in range(7):
+#                                ax[m,n].scatter(points[:, n], points[:, m], s=10, color=colors[i])
+#                                if m == 6:
+#                                    ax[m,n].set(xlabel=cols[n])
+#                                
+#                                if n == 0:
+#                                    ax[m,n].set(ylabel=cols[m])
+#                                
+#                        plt.suptitle(name + ', k=' + str(k) + ', cluster ' + str(i))
+#                        plt.savefig('cluster' + str(i) + '.png')    # save plot
+#                        plt.clf()
+#                        plt.close()
 
-            f.close()
-            # plot data
-            fig1, ax1 = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-            for m in range(7):  # row of plot grid, corresponds to y-value
-                for n in range(7):  # column of plot grid, corresponds to x-value
-                    ax1[m,n].scatter(X[:, n], X[:, m], s=10, color=colors[y_pred])
-                    if m == 6:  # put x-label axis below bottom row
-                        ax1[m,n].set(xlabel=cols[n])
-
-                    if n == 0:  # put y-label axis next to first column
-                        ax1[m,n].set(ylabel=cols[m])
-
-            plt.suptitle(name + ' data, k=' + str(k))
-            plt.savefig('data.png')    # save plot
-            plt.clf()
-            plt.close()
+                #f.close()
+                # plot data
+#                fig1, ax1 = plt.subplots(7,7, sharex = 'all', sharey = 'all')
+#                for m in range(7):  # row of plot grid, corresponds to y-value
+#                    for n in range(7):  # column of plot grid, corresponds to x-value
+#                        ax1[m,n].scatter(X[:, n], X[:, m], s=10, color=colors[y_pred])
+#                        if m == 6:  # put x-label axis below bottom row
+#                            ax1[m,n].set(xlabel=cols[n])
+#
+#                        if n == 0:  # put y-label axis next to first column
+#                            ax1[m,n].set(ylabel=cols[m])
+#
+#                plt.suptitle(name + ' data, k=' + str(k))
+#                plt.savefig('data.png')    # save plot
+#                plt.clf()
+#                plt.close()
             
-            # plot cluster means
-            fig2, ax2 = plt.subplots(7,7, sharex = 'all', sharey = 'all')
+                # plot cluster means
+#                fig2, ax2 = plt.subplots(7,7, sharex = 'all', sharey = 'all')
+#                for m in range(7):
+#                    for n in range(7):
+#                        ax2[m,n].scatter(means[:, n], means[:, m], s=10, color=colors)
+#                        if m == 6:
+#                            ax2[m,n].set(xlabel=cols[n])
+#                    
+#                        if n == 0:
+#                            ax2[m,n].set(ylabel=cols[m])
+#                    
+#                plt.suptitle(name + ' centroids, k=' + str(k))
+#                plt.savefig('centroids.png')    # save plot
+#                plt.clf()
+#                plt.close()
+#                os.chdir(directory)
+                
+            cfile = open('centroids.txt', 'w+')
+            for i in range(100*k):
+                for j in range(7):
+                    cfile.write(str(centroids[i,j]))
+                    cfile.write(' ')
+                    
+                cfile.write(';\r\n')
+                
+            cfile.close()
+            # plot all cluster means together
+            fig3, ax3 = plt.subplots(7,7, sharex = 'all', sharey = 'all')
             for m in range(7):
                 for n in range(7):
-                    ax2[m,n].scatter(means[:, n], means[:, m], s=10, color=colors)
+                    ax3[m,n].scatter(centroids[:, n], centroids[:, m], s=10)
                     if m == 6:
-                        ax2[m,n].set(xlabel=cols[n])
-                    
+                        ax3[m,n].set(xlabel=cols[n])
+                        
                     if n == 0:
-                        ax2[m,n].set(ylabel=cols[m])
-                    
-            plt.suptitle(name + ' centroids, k=' + str(k))
-            plt.savefig('centroids.png')    # save plot
+                        ax3[m,n].set(ylabel=cols[m])
+                        
+            plt.suptitle(name + ', all centroids, k=' + str(k))
+            plt.savefig('allcentroids.png')
             plt.clf()
             plt.close()
             os.chdir(newdir)
 
-        os.chdir(currdir + '\\results\\' + table)
+        os.chdir(currdir + '\\results1\\' + table)
 
-    os.chdir(currdir + '\\results')
+    os.chdir(currdir + '\\results1')
     
 os.chdir(currdir)
