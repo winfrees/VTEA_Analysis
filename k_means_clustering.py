@@ -74,7 +74,7 @@ for table in tables:
     # Set up cluster parameters
     # ============
 
-    for k in range(3,10,3):
+    for k in [4,5,7,8]:
         if not os.path.exists('k=' + str(k)):
             os.mkdir('k=' + str(k))
             
