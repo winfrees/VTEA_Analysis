@@ -248,6 +248,7 @@ for table in tables:
 #                plt.close()
 #                os.chdir(directory)
                 
+            #save centroids in text file
             cfile = open('centroids.txt', 'w+')
             for i in range(100*k):
                 for j in range(7):
