@@ -5,7 +5,24 @@ This repository is for organizing, archiving and following progress of efforts t
 
 
 
-For new plots and data, go to results1 folder.
+VTEA_plots contains plots for VTEA
+VTEA_trimmed_plots contains plots for VTEA_trimmed
+Within each folder:
+AllDimensions: plots for all pairs of dimensions
+ReducedDimensions: got rid of dimensions that are repeats or squares of other dimensions
+7D: only included Ch1-Ch7 means
+
+Within each of those folders, the following plots are included:
+data: all the data points together. Normal cells are blue, Disease A cells are red
+Normal: plots of only the Normal cells
+Disease A: plots of only the Disease A cells
+
+
+
+
+
+
+For flow data and plots, go to results1 folder.
 Then go to folder corresponding to desired data set.
 
 Within this folder:
