@@ -54,15 +54,15 @@ cols = ['Ch1 mean',
         'Ch4_d1 mean',
         'Ch5_d1 mean',
         'Ch6_d1 mean',
-        'Ch7_d1 mean'#,
-        #'Ch1 #pixels',
-        #'Ch1 sum',
-        #'Ch1 max',
-        #'Ch1 SD',
-        #'Ch1 AR',
-        #'Ch1 F_min',
-        #'Ch1 F_max',
-        #'Ch1 mean_th',
+        'Ch7_d1 mean',
+        'Ch1 #pixels',
+        'Ch1 sum',
+        'Ch1 max',
+        'Ch1 SD',
+        'Ch1 AR',
+        'Ch1 F_min',
+        'Ch1 F_max',
+        'Ch1 mean_th'#,
         ##'Ch1 mean_sq',
         ##'Ch1_d0 mean',
         ##'Ch1_d0 sum',
@@ -79,15 +79,15 @@ trimmed_cols = [#'Unnamed: 0',
                 'Ch4_d1.mean',
                 'Ch5_d1.mean',
                 'Ch6_d1.mean',
-                'Ch7_d1.mean'#,
-                #'Ch1..pixels',
-                #'Ch1.sum',
-                #'Ch1.max',
-                #'Ch1.SD',
-                #'Ch1.AR',
-                #'Ch1.F_min',
-                #'Ch1.F_max',
-                #'Ch1.mean_th',
+                'Ch7_d1.mean',
+                'Ch1..pixels',
+                'Ch1.sum',
+                'Ch1.max',
+                'Ch1.SD',
+                'Ch1.AR',
+                'Ch1.F_min',
+                'Ch1.F_max',
+                'Ch1.mean_th'#,
                 ##'Ch1.mean_sq',
                 ##'Ch1_d0.mean',
                 ##'Ch1_d0.sum',
@@ -135,17 +135,24 @@ for i in range(len(ctype)):
 #    
 #os.chdir('data')
 fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(len(cols)):
-    for n in range(len(cols)):
-        ax[n,m].scatter(X[:, m], X[:, n], s=10, color = colors)
-        if n == 6:
-            ax[n,m].set(xlabel=cols[m])
-            
-        if m == 0:
-            ax[n,m].set(ylabel=cols[n])
-            
-plt.suptitle('Ch1-Ch7 means')
-plt.savefig('data.png')
+for m in range(7):  # row of plot grid, corresponds to y-value
+    for n in range(7):  # column of plot grid, corresponds to x-value
+        if m != n:
+            x = X[:, n]
+            y = X[:, m]
+            xy = np.vstack([x, y])
+            z = gaussian_kde(xy)(xy)
+            idx = z.argsort()
+            x, y, z = x[idx], y[idx], z[idx]
+            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
+                
+        if m == 6:  # put x-label axis below bottom row
+            ax[m,n].set(xlabel=cols[n])
+
+        if n == 0:  # put y-label axis next to first column
+            ax[m,n].set(ylabel=cols[m])
+
+plt.savefig('density.png')    # save plot
 plt.clf()
 plt.close()
         
@@ -160,37 +167,52 @@ X2 = np.array([X[j] for j in range(len(X)) if ctype[j] == 'Disease A'])
 #    
 #os.chdir('Normal')
 fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(len(cols)):
-    for n in range(len(cols)):
-        ax[n,m].scatter(X1[:, m], X1[:, n], s=10, color = 'b')
-        if n == 6:
-            ax[n,m].set(xlabel=cols[m])
-            
-        if m == 0:
-            ax[n,m].set(ylabel=cols[n])
-            
-plt.suptitle('Ch1-Ch7 means, normal cells')
-plt.savefig('normal.png')
+for m in range(7):  # row of plot grid, corresponds to y-value
+    for n in range(7):  # column of plot grid, corresponds to x-value
+        if m != n:
+            x = X1[:, n]
+            y = X1[:, m]
+            xy = np.vstack([x, y])
+            z = gaussian_kde(xy)(xy)
+            idx = z.argsort()
+            x, y, z = x[idx], y[idx], z[idx]
+            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
+                
+        if m == 6:  # put x-label axis below bottom row
+            ax[m,n].set(xlabel=cols[n])
+
+        if n == 0:  # put y-label axis next to first column
+            ax[m,n].set(ylabel=cols[m])
+
+plt.savefig('normaldensity.png')    # save plot
 plt.clf()
 plt.close()
 
+#os.chdir(newdir)
 # plot diseased cells
 #if not os.path.exists('Disease A'):
 #    os.mkdir('Disease A')
 #    
 #os.chdir('Disease A')
 fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(len(cols)):
-    for n in range(len(cols)):
-        ax[n,m].scatter(X2[:, m], X2[:, n], s=10, color = 'r')
-        if n == 6:
-            ax[n,m].set(xlabel=cols[m])
-            
-        if m == 0:
-            ax[n,m].set(ylabel=cols[n])
-            
-plt.suptitle('Ch1-Ch7 means, Disease A')
-plt.savefig('disease.png')
+for m in range(7):  # row of plot grid, corresponds to y-value
+    for n in range(7):  # column of plot grid, corresponds to x-value
+        if m != n:
+            x = X2[:, n]
+            y = X2[:, m]
+            xy = np.vstack([x, y])
+            z = gaussian_kde(xy)(xy)
+            idx = z.argsort()
+            x, y, z = x[idx], y[idx], z[idx]
+            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
+                
+        if m == 6:  # put x-label axis below bottom row
+            ax[m,n].set(xlabel=cols[n])
+
+        if n == 0:  # put y-label axis next to first column
+            ax[m,n].set(ylabel=cols[m])
+
+plt.savefig('diseasedensity.png')    # save plot
 plt.clf()
 plt.close()
     
