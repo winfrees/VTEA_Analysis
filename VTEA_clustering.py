@@ -28,11 +28,6 @@ import shutil
 currdir = os.getcwd()
 print(currdir)
 
-if not os.path.exists('VTEA_plots'):
-    os.mkdir('VTEA_plots')
-
-os.chdir('VTEA_plots')
-
 plt.rcParams['figure.figsize'] = (16, 9)
 plt.style.use('ggplot')
 
@@ -40,15 +35,9 @@ plt.style.use('ggplot')
 # Euclidean Distance Calculator
 def dist(a, b, ax=1):
     return np.linalg.norm(a - b, axis=ax)
-
-# Importing the dataset
-data = pd.read_csv(currdir + '\\Datasets\\VTEA.csv')
-print(data.shape)   # size of data
-#print(data)
-data.head()
-    
+   
 # Getting the values
-cols = ['Ch1 mean',
+original_cols = ['Ch1 mean',
         'Ch2_d1 mean',
         'Ch3_d1 mean',
         'Ch4_d1 mean',
@@ -96,124 +85,283 @@ trimmed_cols = [#'Unnamed: 0',
                 ##'Ch1_d0.mean_th',
                 ##'Ch1_d0.mean_sq'
                 ]
-X = np.zeros(data.shape)
-for i in range(len(cols)):
-    X[:, i] = data[cols[i]].values
-    
-for m in range(len(cols)):
-    for n in range(m+1, len(cols)):
-        if np.array_equal(X[:, m], X[:, n]):
-            print(cols[m] + ' (' + str(m) + ') is ' + cols[n] + ' (' + str(n) + ')')           
-        else:
-            if np.array_equal(X[:, m] ** 2, X[:, n]):
-                print(cols[m] + ' (' + str(m) + ') squared is ' + cols[n] + ' (' + str(n) + ')')
-            else:
-                if np.array_equal(X[:, m], X[:, n] ** 2):
-                    print(cols[m] + ' (' + str(m) + ') is ' + cols[n] + ' (' + str(n) + ') squared')
-    
-if not os.path.exists('7D'):
-    os.mkdir('7D')
-    
-os.chdir('7D')
 
-newdir = os.getcwd()
+cols = [trimmed_cols, original_cols]
+#print(cols)
+#print()
+#print(cols[0])
+#print()
+#print(cols[1])
+#print()
+#print(cols[0][0])
+#print(cols[1][5])
+tables = ['Datasets\\VTEA_trimmed.csv', 'Datasets\\VTEA.csv']
+folders = ['VTEA_trimmed_plots', 'VTEA_plots']
 
-#print(X)
-ctype = data['Object'].values
-#print(ctype)
+for tablenum in range(1, 2):
+    numcols = len(cols[tablenum])
+    # Importing the dataset
+    data = pd.read_csv(tables[tablenum])
+    #print(data.shape)   # size of data
+    #print(data)
+    #data.head()
 
-colors = ['b']*len(ctype)
-for i in range(len(ctype)):
-    if ctype[i] == 'Disease A':
-        colors[i] = 'r'
+    if not os.path.exists(folders[tablenum]):
+        os.mkdir(folders[tablenum])
+
+    os.chdir(folders[tablenum])
+
+    X = np.zeros((len(data), numcols))
+    for i in range(numcols):
+        X[:, i] = data[cols[tablenum][i]].values
+    #print(X.shape)
+    #print(X)
+#    for m in range(len(cols[tablenum])):
+#        for n in range(m+1, len(cols[tablenum])):
+#            if np.array_equal(X[:, m], X[:, n]):
+#                print(cols[tablenum][m] + ' (' + str(m) + ') is '
+#                      + cols[tablenum][n] + ' (' + str(n) + ')')           
+#            else:
+#                if np.array_equal(X[:, m] ** 2, X[:, n]):
+#                    print(cols[tablenum][m] + ' (' + str(m) + ') squared is '
+#                          + cols[tablenum][n] + ' (' + str(n) + ')')
+#                else:
+#                    if np.array_equal(X[:, m], X[:, n] ** 2):
+#                        print(cols[tablenum][m] + ' (' + str(m) + ') is '
+#                              + cols[tablenum][n] + ' (' + str(n) + ') squared')
+#    
+    if not os.path.exists('NoD0DupsOrSqs'):
+        os.mkdir('NoD0DupsOrSqs')
+    
+    os.chdir('NoD0DupsOrSqs')
+
+    tabledir = os.getcwd()
+
+    #print(X)
+    ctype = data['Object'].values
+    #print(ctype)
+    
+    X1 = np.array([X[j] for j in range(len(X)) if ctype[j] == 'Normal'])
+    X2 = np.array([X[j] for j in range(len(X)) if ctype[j] == 'Disease A'])
+
+#    colors = ['b']*len(ctype)
+#    for i in range(len(ctype)):
+#        if ctype[i] == 'Disease A':
+#            colors[i] = 'r'
         
-#print(colors)
-
-#plot all cells
-#if not os.path.exists('data'):
-#    os.mkdir('data')
-#    
-#os.chdir('data')
-fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(7):  # row of plot grid, corresponds to y-value
-    for n in range(7):  # column of plot grid, corresponds to x-value
-        if m != n:
-            x = X[:, n]
-            y = X[:, m]
-            xy = np.vstack([x, y])
-            z = gaussian_kde(xy)(xy)
-            idx = z.argsort()
-            x, y, z = x[idx], y[idx], z[idx]
-            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
-                
-        if m == 6:  # put x-label axis below bottom row
-            ax[m,n].set(xlabel=cols[n])
-
-        if n == 0:  # put y-label axis next to first column
-            ax[m,n].set(ylabel=cols[m])
-
-plt.savefig('density.png')    # save plot
-plt.clf()
-plt.close()
-        
-#os.chdir(newdir)
-
-X1 = np.array([X[j] for j in range(len(X)) if ctype[j] == 'Normal'])
-X2 = np.array([X[j] for j in range(len(X)) if ctype[j] == 'Disease A'])
-
-#plot normal cells
-#if not os.path.exists('Normal'):
-#    os.mkdir('Normal')
-#    
-#os.chdir('Normal')
-fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(7):  # row of plot grid, corresponds to y-value
-    for n in range(7):  # column of plot grid, corresponds to x-value
-        if m != n:
-            x = X1[:, n]
-            y = X1[:, m]
-            xy = np.vstack([x, y])
-            z = gaussian_kde(xy)(xy)
-            idx = z.argsort()
-            x, y, z = x[idx], y[idx], z[idx]
-            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
-                
-        if m == 6:  # put x-label axis below bottom row
-            ax[m,n].set(xlabel=cols[n])
-
-        if n == 0:  # put y-label axis next to first column
-            ax[m,n].set(ylabel=cols[m])
-
-plt.savefig('normaldensity.png')    # save plot
-plt.clf()
-plt.close()
-
-#os.chdir(newdir)
-# plot diseased cells
-#if not os.path.exists('Disease A'):
-#    os.mkdir('Disease A')
-#    
-#os.chdir('Disease A')
-fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
-for m in range(7):  # row of plot grid, corresponds to y-value
-    for n in range(7):  # column of plot grid, corresponds to x-value
-        if m != n:
-            x = X2[:, n]
-            y = X2[:, m]
-            xy = np.vstack([x, y])
-            z = gaussian_kde(xy)(xy)
-            idx = z.argsort()
-            x, y, z = x[idx], y[idx], z[idx]
-            ax[m,n].scatter(x, y, c=z, s=10, edgecolor='')
-                
-        if m == 6:  # put x-label axis below bottom row
-            ax[m,n].set(xlabel=cols[n])
-
-        if n == 0:  # put y-label axis next to first column
-            ax[m,n].set(ylabel=cols[m])
-
-plt.savefig('diseasedensity.png')    # save plot
-plt.clf()
-plt.close()
+    #print(colors)
     
-os.chdir(currdir)
+    for k in range(9,10):
+        if not os.path.exists('k=' + str(k)):
+            os.mkdir('k=' + str(k))
+            
+        os.chdir('k=' + str(k))
+        print('\nk=' + str(k) + '\n')
+        kdir = os.getcwd()
+        params = {'quantile': .3,
+                  'eps': .3,   # higher values of eps lead to more DBSCAN clusters
+                  'damping': .9,
+                  'preference': -200,
+                  'n_neighbors': 10,
+                  'n_clusters': k}  # number of clusters (for clustering methods that require this parameter)
+        # normalize dataset for easier parameter selection
+        #X = StandardScaler().fit_transform(X)
+        
+        # estimate bandwidth for mean shift
+        #bandwidth = cluster.estimate_bandwidth(X, quantile=params['quantile'])
+
+        # connectivity matrix for structured Ward
+#        connectivity = kneighbors_graph(
+#                X, n_neighbors=params['n_neighbors'], include_self=False)
+        # make connectivity symmetric
+        #connectivity = 0.5 * (connectivity + connectivity.T)
+
+        # ============
+        # Create cluster objects
+        # ============
+        #ms = cluster.MeanShift(bandwidth=bandwidth, bin_seeding=True)
+        two_means = cluster.MiniBatchKMeans(n_clusters=params['n_clusters'])
+#        ward = cluster.AgglomerativeClustering(
+#                n_clusters=params['n_clusters'], linkage='ward',
+#                connectivity=connectivity)
+        spectral = cluster.SpectralClustering(
+                n_clusters=params['n_clusters'], eigen_solver='arpack',
+                affinity="nearest_neighbors")
+        dbscan = cluster.DBSCAN(eps=params['eps'])
+        affinity_propagation = cluster.AffinityPropagation(
+                damping=params['damping'], preference=params['preference'])
+#        average_linkage = cluster.AgglomerativeClustering(
+#                linkage="average", affinity="cityblock",
+#                n_clusters=params['n_clusters'], connectivity=connectivity)
+        birch = cluster.Birch(n_clusters=params['n_clusters'])
+        gmm = mixture.GaussianMixture(
+                n_components=params['n_clusters'], covariance_type='full')
+
+        # uncomment clustering algorithms to include them
+        clustering_algorithms = (
+                ('MiniBatchKMeans', two_means),
+                #('AffinityPropagation', affinity_propagation),
+                #('MeanShift', ms),
+                #('SpectralClustering', spectral),
+                #('Ward', ward),
+                #('AgglomerativeClustering', average_linkage),
+                #('DBSCAN', dbscan),
+                #('Birch', birch),
+                ('GaussianMixture', gmm)
+                )
+
+        #for name, algorithm in clustering_algorithms:
+        name = 'GaussianMixture'
+        algorithm = gmm
+        if 1:
+            if not os.path.exists(name):
+                os.mkdir(name)
+                
+            os.chdir(name)
+            print(name)
+            algdir = os.getcwd()
+            sets = [X, X1, X2]
+            setnames = ['All', 'Normal', 'Disease A']
+            for index in range(2, 3):
+                if not os.path.exists(setnames[index]):
+                    os.mkdir(setnames[index])
+                    
+                os.chdir(setnames[index])
+                print(setnames[index])
+                centroids = np.zeros((100*k, numcols))
+                cfile = open('clusters.txt', 'w+')
+                for trial in range(100):
+                    t0 = time.time()
+                    # catch warnings related to kneighbors_graph
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                                "ignore",
+                                message="the number of connected components of the " +
+                                "connectivity matrix is [0-9]{1,2}" +
+                                " > 1. Completing it to avoid stopping the tree early.",
+                                category=UserWarning)
+                        warnings.filterwarnings(
+                                "ignore",
+                                message="Graph is not fully connected, spectral embedding" +
+                                " may not work as expected.",
+                                category=UserWarning)
+                        algorithm.fit(sets[index])
+    
+                    t1 = time.time()
+                    # y_pred is cluster number
+                    if hasattr(algorithm, 'labels_'):
+                        y_pred = algorithm.labels_.astype(np.int)
+    
+                    else:
+                        y_pred = algorithm.predict(sets[index])
+    
+                    lowerbound = int(min(y_pred))    # lowest cluster number
+                    upperbound = int(max(y_pred) + 1)   # highest cluster number
+                    colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+                                                         '#f781bf', '#a65628', '#984ea3',
+                                                         '#999999', '#e41a1c', '#dede00']),
+                                                         9*(upperbound - lowerbound))))
+                    #print(name)
+                    #print('\nnumber of clusters:')
+                    #print(upperbound - lowerbound)
+                    #print()
+                    means = np.zeros((k, numcols))
+                    for i in range(k):
+                        # get cluster
+                        points = np.array([sets[index][j] for j in range(len(sets[index])) if int(y_pred[j]) == i])
+                        size = len(points)  # size of cluster
+                        if size > 0:
+                            # save cluster info
+                            #means[i] = np.mean(points, axis=0)
+                            centroids[k*trial+i] = np.mean(points, axis=0)
+                            for j in range(numcols):
+                                cfile.write(str(centroids[k*trial+i, j]))
+                                cfile.write(' ')
+                                
+                            cfile.write(';\r\n')
+    
+                cfile.close()
+                # plot all cluster means together
+                for m in range(numcols):
+                    for n in range(m+1, numcols):
+                        x = centroids[:, m]
+                        y = centroids[:, n]
+                        xy = np.vstack([x, y])
+                        z = gaussian_kde(xy)(xy)
+                        idx = z.argsort()
+                        x, y, z = x[idx], y[idx], z[idx]
+                        plt.scatter(x, y, c=z, s=50, edgecolor='')
+                        plt.xlabel(cols[tablenum][m])
+                        plt.ylabel(cols[tablenum][n])
+                        plt.title(name + ', all centroids, k=' + str(k))
+                        plt.savefig('densitycentroids' + str(m) + ',' + str(n) + '.png')
+                        plt.clf()
+                        plt.close()
+                
+                os.chdir(algdir)
+                
+            os.chdir(kdir)
+
+        os.chdir(tabledir)
+    
+    os.chdir(currdir)    
+    
+    
+    
+    
+    
+    
+    
+    
+#
+#    #plot all cells
+#    if not os.path.exists('data'):
+#        os.mkdir('data')
+#    
+#    os.chdir('data')
+#
+#    for m in range(len(cols[tablenum])):  # row of plot grid, corresponds to y-value
+#        for n in range(m+1, len(cols[tablenum])):  # column of plot grid, corresponds to x-value
+#            plt.scatter(X[:, m], X[:, n], s=50, color = colors)
+#            plt.xlabel(cols[tablenum][m])
+#            plt.ylabel(cols[tablenum][n])
+#            plt.savefig('axes' + str(m) + 'and' + str(n) + '.png')    # save plot
+#            plt.clf()
+#            plt.close()
+#        
+#    os.chdir(newdir)
+#
+#
+#    #plot normal cells
+#    if not os.path.exists('Normal'):
+#        os.mkdir('Normal')
+#    
+#    os.chdir('Normal')
+#
+#    for m in range(len(cols[tablenum])):  # row of plot grid, corresponds to y-value
+#        for n in range(m+1, len(cols[tablenum])):  # column of plot grid, corresponds to x-value
+#            plt.scatter(X1[:, m], X1[:, n], s=50, color='b')
+#            plt.xlabel(cols[tablenum][m])
+#            plt.ylabel(cols[tablenum][n])
+#            plt.savefig('axes' + str(m) + 'and' + str(n) + '.png')    # save plot
+#            plt.clf()
+#            plt.close()
+#
+#    os.chdir(newdir)
+#
+#    # plot diseased cells
+#    if not os.path.exists('Disease A'):
+#        os.mkdir('Disease A')
+#    
+#    os.chdir('Disease A')
+#
+#    for m in range(len(cols[tablenum])):  # row of plot grid, corresponds to y-value
+#        for n in range(m+1, len(cols[tablenum])):  # column of plot grid, corresponds to x-value
+#            plt.scatter(X2[:, m], X2[:, n], s=50, color='r')
+#            plt.xlabel(cols[tablenum][m])
+#            plt.ylabel(cols[tablenum][n])
+#            plt.savefig('axes' + str(m) + 'and' + str(n) + '.png')    # save plot
+#            plt.clf()
+#            plt.close()
+#
+#    os.chdir(newdir)
