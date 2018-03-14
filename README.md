@@ -10,12 +10,21 @@ VTEA_trimmed_plots contains plots for VTEA_trimmed
 Within each folder:
 AllDimensions: plots for all pairs of dimensions
 ReducedDimensions: got rid of dimensions that are repeats or squares of other dimensions
+NoD0DupsOrSqs: Same as ReducedDimensions, but also got rid of Ch1_d0 SD
 7D: only included Ch1-Ch7 means
 
-Within each of those folders, the following plots are included:
+Within each of those folders:
 data: all the data points together. Normal cells are blue, Disease A cells are red
 Normal: plots of only the Normal cells
 Disease A: plots of only the Disease A cells
+For cluster centroids, select folder corresponding to number of clusters.
+Then select folder corresponding to clustering method.
+Then select portion of data (All, Normal, or Disease A).
+Within this folder:
+clusters.txt: list of cluster centroids from all 100 trials combined
+densitycentroids[m],[n]: plot of cluster centroids, dimensions [m] and [n]
+
+
 
 
 
