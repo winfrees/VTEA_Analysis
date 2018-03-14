@@ -43,15 +43,15 @@ original_cols = ['Ch1 mean',
         'Ch4_d1 mean',
         'Ch5_d1 mean',
         'Ch6_d1 mean',
-        'Ch7_d1 mean',
-        'Ch1 #pixels',
-        'Ch1 sum',
-        'Ch1 max',
-        'Ch1 SD',
-        'Ch1 AR',
-        'Ch1 F_min',
-        'Ch1 F_max',
-        'Ch1 mean_th'#,
+        'Ch7_d1 mean'#,
+#        'Ch1 #pixels',
+#        'Ch1 sum',
+#        'Ch1 max',
+#        'Ch1 SD',
+#        'Ch1 AR',
+#        'Ch1 F_min',
+#        'Ch1 F_max',
+#        'Ch1 mean_th'#,
         ##'Ch1 mean_sq',
         ##'Ch1_d0 mean',
         ##'Ch1_d0 sum',
@@ -68,15 +68,15 @@ trimmed_cols = [#'Unnamed: 0',
                 'Ch4_d1.mean',
                 'Ch5_d1.mean',
                 'Ch6_d1.mean',
-                'Ch7_d1.mean',
-                'Ch1..pixels',
-                'Ch1.sum',
-                'Ch1.max',
-                'Ch1.SD',
-                'Ch1.AR',
-                'Ch1.F_min',
-                'Ch1.F_max',
-                'Ch1.mean_th'#,
+                'Ch7_d1.mean'#,
+#                'Ch1..pixels',
+#                'Ch1.sum',
+#                'Ch1.max',
+#                'Ch1.SD',
+#                'Ch1.AR',
+#                'Ch1.F_min',
+#                'Ch1.F_max',
+#                'Ch1.mean_th'#,
                 ##'Ch1.mean_sq',
                 ##'Ch1_d0.mean',
                 ##'Ch1_d0.sum',
@@ -98,7 +98,7 @@ cols = [trimmed_cols, original_cols]
 tables = ['Datasets\\VTEA_trimmed.csv', 'Datasets\\VTEA.csv']
 folders = ['VTEA_trimmed_plots', 'VTEA_plots']
 
-for tablenum in range(1, 2):
+for tablenum in range(2):
     numcols = len(cols[tablenum])
     # Importing the dataset
     data = pd.read_csv(tables[tablenum])
@@ -130,10 +130,10 @@ for tablenum in range(1, 2):
 #                        print(cols[tablenum][m] + ' (' + str(m) + ') is '
 #                              + cols[tablenum][n] + ' (' + str(n) + ') squared')
 #    
-    if not os.path.exists('NoD0DupsOrSqs'):
-        os.mkdir('NoD0DupsOrSqs')
+    if not os.path.exists('7D'):
+        os.mkdir('7D')
     
-    os.chdir('NoD0DupsOrSqs')
+    os.chdir('7D')
 
     tabledir = os.getcwd()
 
@@ -151,7 +151,7 @@ for tablenum in range(1, 2):
         
     #print(colors)
     
-    for k in range(9,10):
+    for k in range(3,10):
         if not os.path.exists('k=' + str(k)):
             os.mkdir('k=' + str(k))
             
@@ -210,10 +210,7 @@ for tablenum in range(1, 2):
                 ('GaussianMixture', gmm)
                 )
 
-        #for name, algorithm in clustering_algorithms:
-        name = 'GaussianMixture'
-        algorithm = gmm
-        if 1:
+        for name, algorithm in clustering_algorithms:
             if not os.path.exists(name):
                 os.mkdir(name)
                 
@@ -222,7 +219,7 @@ for tablenum in range(1, 2):
             algdir = os.getcwd()
             sets = [X, X1, X2]
             setnames = ['All', 'Normal', 'Disease A']
-            for index in range(2, 3):
+            for index in range(3):
                 if not os.path.exists(setnames[index]):
                     os.mkdir(setnames[index])
                     
@@ -282,21 +279,28 @@ for tablenum in range(1, 2):
     
                 cfile.close()
                 # plot all cluster means together
+                fig, ax = plt.subplots(7,7, sharex = 'all', sharey = 'all')
                 for m in range(numcols):
-                    for n in range(m+1, numcols):
-                        x = centroids[:, m]
-                        y = centroids[:, n]
-                        xy = np.vstack([x, y])
-                        z = gaussian_kde(xy)(xy)
-                        idx = z.argsort()
-                        x, y, z = x[idx], y[idx], z[idx]
-                        plt.scatter(x, y, c=z, s=50, edgecolor='')
-                        plt.xlabel(cols[tablenum][m])
-                        plt.ylabel(cols[tablenum][n])
-                        plt.title(name + ', all centroids, k=' + str(k))
-                        plt.savefig('densitycentroids' + str(m) + ',' + str(n) + '.png')
-                        plt.clf()
-                        plt.close()
+                    for n in range(numcols):
+                        if m != n:
+                            x = centroids[:, m]
+                            y = centroids[:, n]
+                            xy = np.vstack([x, y])
+                            z = gaussian_kde(xy)(xy)
+                            idx = z.argsort()
+                            x, y, z = x[idx], y[idx], z[idx]
+                            ax[n,m].scatter(x, y, c=z, s=10, edgecolor='')
+                            
+                        if n == 6:
+                            ax[n,m].set(xlabel=cols[tablenum][m])
+                            
+                        if m == 0:
+                            ax[n,m].set(ylabel=cols[tablenum][n])
+                            
+                plt.suptitle(name + ', all centroids, k=' + str(k))
+                plt.savefig('densitycentroids.png')
+                plt.clf()
+                plt.close()
                 
                 os.chdir(algdir)
                 
